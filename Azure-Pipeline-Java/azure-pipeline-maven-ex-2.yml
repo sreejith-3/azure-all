@@ -1,0 +1,43 @@
+trigger:
+  branches:
+    include:
+      - main  # The branch that triggers the pipeline
+
+pool:
+  vmImage: 'ubuntu-latest'  # Using the latest Ubuntu VM image
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildAndPackage
+        steps:
+          - checkout: self  # Checkout the source code from the repository
+
+          - task: Maven@4  # Using Maven task version 4
+            inputs:
+              mavenPomFile: 'pom.xml'  # The path to the Maven POM file
+              mavenOptions: '-Xmx3072m'  # JVM options to set maximum memory usage to 3072MB
+              javaHomeOption: 'JDKVersion'  # Use a specific JDK version
+              jdkVersionOption: 'default'  # Use the default JDK version configured in the pipeline agent
+              jdkArchitectureOption: 'x64'  # Specify the architecture (64-bit)
+              publishJUnitResults: true  # Publish JUnit test results
+              testResultsFiles: '**/TEST-*.xml'  # Pattern to find the test results files
+              goals: 'package'  # Maven goal to package the project (usually into a JAR or WAR file)
+
+          - publish: $(System.DefaultWorkingDirectory)/target/*.jar
+            artifact: drop
+            displayName: 'Publish JAR Artifact'
+
+  - stage: Deploy
+    dependsOn: Build
+    jobs:
+      - job: DeployToAzure
+        steps:
+          - download: current
+            artifact: drop
+
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: '<Your-Azure-Subscription>'
+              appName: '<Your-App-Service-Name>'
+              package: $(Pipeline.Workspace)/drop/*.jar

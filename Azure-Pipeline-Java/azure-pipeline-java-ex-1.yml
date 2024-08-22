@@ -1,0 +1,56 @@
+# Define the trigger to run the pipeline on changes to the main branch
+trigger:
+  branches:
+    include:
+      - main
+
+# Define the stages of the pipeline
+stages:
+  - stage: Build
+    jobs:
+      - job: Build
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: Maven@3
+            inputs:
+              mavenPomFile: 'pom.xml'  # Path to your Maven POM file
+              goals: 'clean install -DskipTests'
+              options: '-X'  # Optional: Enable debug output
+            displayName: 'Build with Maven'
+
+  - stage: Test
+    dependsOn: Build
+    jobs:
+      - job: Test
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: Maven@3
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'test'
+              options: '-X'
+            displayName: 'Run Tests with Maven'
+
+  - stage: Deploy
+    dependsOn: Test
+    jobs:
+      - job: Deploy
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: Maven@3
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'deploy'
+              options: '-X'
+            displayName: 'Deploy with Maven'
+
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'YOUR_AZURE_SUBSCRIPTION_SERVICE_CONNECTION'
+              appName: 'YOUR_APP_NAME'
+              package: '$(Pipeline.Workspace)/**/*.jar'
+              # Alternatively, use other package types or deployment methods
+            displayName: 'Deploy to Azure Web App'
