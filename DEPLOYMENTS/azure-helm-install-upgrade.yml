@@ -1,0 +1,70 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  helmChartPath: 'path/to/your/chart'
+  helmReleaseName: 'your-release-name'
+  kubernetesCluster: 'your-aks-cluster'
+  azureSubscription: 'your-azure-subscription'
+  resourceGroup: 'your-resource-group'
+  namespace: 'default'
+
+parameters:
+  - name: action
+    displayName: 'Action'
+    type: string
+    default: 'upgrade'
+    values:
+      - install
+      - upgrade
+
+  - name: environment
+    displayName: 'Environment'
+    type: string
+    default: 'dev'
+    values:
+      - dev
+      - uat
+      - prod
+
+stages:
+- stage: Deploy
+  displayName: 'Deploy Helm Chart'
+  jobs:
+  - job: Deploy
+    displayName: 'Install or Upgrade Helm Chart'
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: 'bash'
+        scriptPath: 'setup-aks.sh'
+        arguments: '--environment $(environment)'
+
+    - task: HelmInstaller@1
+      inputs:
+        helmVersionToInstall: '3.x'
+    
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: 'bash'
+        scriptPath: 'setup-aks.sh'
+        arguments: '--environment $(environment)'
+
+    - task: HelmDeploy@0
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscription: $(azureSubscription)
+        azureResourceGroup: $(resourceGroup)
+        kubernetesCluster: $(kubernetesCluster)
+        command: '$(parameters.action)'
+        chartType: 'FilePath'
+        chartPath: $(helmChartPath)
+        releaseName: $(helmReleaseName)
+        namespace: $(namespace)
+        overrideValues: |
+          environment=$(parameters.environment)
