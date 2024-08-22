@@ -3,233 +3,189 @@ Here’s a comprehensive list of common kubectl commands and their usages for ma
 1. Cluster Management
 Check Cluster Info:
 
-bash
-Copy code
+
 kubectl cluster-info
 View Nodes:
 
-bash
-Copy code
+
 kubectl get nodes
 View Node Details:
 
-bash
-Copy code
+
 kubectl describe node <node-name>
 Check Contexts and Switch Contexts:
 
-bash
-Copy code
+
 kubectl config get-contexts
 kubectl config use-context <context-name>
 Get Cluster Config:
 
-bash
-Copy code
+
 kubectl config view
 2. Pod Management
 List Pods:
 
-bash
-Copy code
+
 kubectl get pods
 View Pod Details:
 
-bash
-Copy code
+
 kubectl describe pod <pod-name>
 Get Pod Logs:
 
-bash
-Copy code
+
 kubectl logs <pod-name>
 Execute Command in Pod:
 
-bash
-Copy code
+
 kubectl exec -it <pod-name> -- <command>
 Delete Pod:
 
-bash
-Copy code
+
 kubectl delete pod <pod-name>
 3. Deployment Management
 List Deployments:
 
-bash
-Copy code
+
 kubectl get deployments
 View Deployment Details:
 
-bash
-Copy code
+
 kubectl describe deployment <deployment-name>
 Scale Deployment:
 
-bash
-Copy code
+
 kubectl scale deployment <deployment-name> --replicas=<number>
 Update Deployment:
 
-bash
-Copy code
+
 kubectl set image deployment/<deployment-name> <container-name>=<new-image>
 Rollout Status:
 
-bash
-Copy code
+
 kubectl rollout status deployment/<deployment-name>
 Rollout History:
 
-bash
-Copy code
+
 kubectl rollout history deployment/<deployment-name>
 Rollout Undo:
 
-bash
-Copy code
+
 kubectl rollout undo deployment/<deployment-name>
 4. Service Management
 List Services:
 
-bash
-Copy code
+
 kubectl get services
 View Service Details:
 
-bash
-Copy code
+
 kubectl describe service <service-name>
 Delete Service:
 
-bash
-Copy code
+
 kubectl delete service <service-name>
 5. Namespace Management
 List Namespaces:
 
-bash
-Copy code
+
 kubectl get namespaces
 View Namespace Details:
 
-bash
-Copy code
+
 kubectl describe namespace <namespace-name>
 Delete Namespace:
 
-bash
-Copy code
+
 kubectl delete namespace <namespace-name>
 6. Configuration Management
 List ConfigMaps:
 
-bash
-Copy code
+
 kubectl get configmaps
 View ConfigMap Details:
 
-bash
-Copy code
+
 kubectl describe configmap <configmap-name>
 Delete ConfigMap:
 
-bash
-Copy code
+
 kubectl delete configmap <configmap-name>
 List Secrets:
 
-bash
-Copy code
+
 kubectl get secrets
 View Secret Details:
 
-bash
-Copy code
+
 kubectl describe secret <secret-name>
 Delete Secret:
 
-bash
-Copy code
+
 kubectl delete secret <secret-name>
 7. Persistent Volume Management
 List Persistent Volumes:
 
-bash
-Copy code
+
 kubectl get pv
 View Persistent Volume Details:
 
-bash
-Copy code
+
 kubectl describe pv <pv-name>
 Delete Persistent Volume:
 
-bash
-Copy code
+
 kubectl delete pv <pv-name>
 8. Job and CronJob Management
 List Jobs:
 
-bash
-Copy code
+
 kubectl get jobs
 View Job Details:
 
-bash
-Copy code
+
 kubectl describe job <job-name>
 Delete Job:
 
-bash
-Copy code
+
 kubectl delete job <job-name>
 List CronJobs:
 
-bash
-Copy code
+
 kubectl get cronjobs
 View CronJob Details:
 
-bash
-Copy code
+
 kubectl describe cronjob <cronjob-name>
 Delete CronJob:
 
-bash
-Copy code
+
 kubectl delete cronjob <cronjob-name>
 9. Resource Management
 Get Resources by Type (e.g., Pods, Services, Deployments):
 
-bash
-Copy code
+
 kubectl get <resource-type>
 Describe Resource by Type (e.g., Pod, Service):
 
-bash
-Copy code
+
 kubectl describe <resource-type> <resource-name>
 Delete Resource by Type (e.g., Pod, Service):
 
-bash
-Copy code
+
 kubectl delete <resource-type> <resource-name>
 10. Cluster Health and Troubleshooting
 Check Cluster Nodes:
 
-bash
-Copy code
+
 kubectl top nodes
 Check Pod Resource Usage:
 
-bash
-Copy code
+
 kubectl top pods
 View Events:
 
-bash
-Copy code
+
 kubectl get events
 These commands help manage and interact with a Kubernetes cluster, enabling you to perform various tasks from deployment and scaling to troubleshooting and monitoring.
 
