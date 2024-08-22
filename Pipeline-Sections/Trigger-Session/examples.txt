@@ -1,0 +1,123 @@
+The trigger section in an Azure Pipeline YAML file specifies the branches or paths 
+that will trigger the pipeline to run automatically. This section is highly configurable, 
+allowing you to specify when and how the pipeline should be triggered. Here’s an explanation 
+of the example provided and various ways you can define triggers:
+
+Example Provided
+trigger:
+  branches:
+    include:
+      - main  # The branch that triggers the pipeline
+
+Explanation:
+trigger:
+This defines the condition under which the pipeline will automatically run.
+branches:
+include: Specifies the branches that should trigger the pipeline.
+- main: The pipeline will be triggered automatically whenever changes are pushed to the main branch. 
+The main branch is typically the primary branch in many Git workflows, equivalent to the master 
+branch in older workflows.
+
+Various Ways to Define Triggers
+Trigger on Multiple Branches:
+
+To trigger the pipeline on more than one branch, you can list multiple branches under include:
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - feature/*
+
+This example triggers the pipeline on any changes to the main, develop, or any branch that 
+starts with feature/.
+
+Exclude Specific Branches:
+
+You can exclude certain branches from triggering the pipeline using the exclude keyword:
+
+trigger:
+  branches:
+    exclude:
+      - experimental/*
+      - hotfix/*
+
+This configuration prevents the pipeline from running when changes are pushed to any 
+branch starting with experimental/ or hotfix/.
+
+Combination of Include and Exclude:
+
+You can combine include and exclude to be more specific about which branches should trigger the pipeline:
+
+trigger:
+  branches:
+    include:
+      - feature/*
+    exclude:
+      - feature/experimental/*
+
+This example triggers the pipeline on all feature/* branches except those starting with feature/experimental/.
+Trigger on All Branches (Default Behavior):
+
+If you want the pipeline to trigger on all branches, you can simply define the trigger without specifying branches:
+
+trigger:
+  - '*'
+
+This configuration will cause the pipeline to run on any branch in the repository.
+
+Trigger Based on Specific Paths:
+
+You can also trigger the pipeline only when changes are made to specific files or directories:
+
+trigger:
+  paths:
+    include:
+      - src/*
+      - docs/*
+    exclude:
+      - docs/old-docs/*
+
+This triggers the pipeline only when changes occur in the src/ directory or the docs/ directory, 
+except for the docs/old-docs/ subdirectory.
+Manual Trigger Only (Disable Automatic Triggers):
+
+If you want to disable automatic triggers and only run the pipeline manually or through
+other means (e.g., schedules, pull requests), you can use:
+
+ trigger: none
+
+This means that no branches will automatically trigger the pipeline. You would need to trigger it manually.
+Trigger on Specific Tags:
+
+You can also set up triggers based on Git tags:
+
+trigger:
+  tags:
+    include:
+      - v1.*
+    exclude:
+      - v1.0.*
+
+This triggers the pipeline on any tags that start with v1. but excludes those starting with v1.0..
+Trigger on Pull Requests:
+
+You can also define triggers specifically for pull requests using the pr keyword:
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+
+This triggers the pipeline when a pull request is opened, updated, or merged into the main or 
+develop branches.
+Summary:
+The trigger section in Azure Pipelines is versatile and allows you to configure when and
+ how your pipeline should run based on branches, paths, tags, or pull requests. By customizing
+  the include and exclude options, you can fine-tune your CI/CD process to suit your project’s workflow.
+
+
+
