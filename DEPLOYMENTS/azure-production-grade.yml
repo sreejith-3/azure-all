@@ -1,0 +1,113 @@
+trigger:
+- main  # Trigger pipeline on changes to the main branch
+
+pr:
+- main  # Trigger pipeline on pull requests targeting the main branch
+
+variables:
+  azureSubscription: 'your-azure-subscription'
+  azureResourceGroup: 'your-resource-group'
+  azureStorageAccount: 'your-storage-account'
+  azureBlobContainer: 'your-blob-container'
+  buildConfiguration: 'Release'
+  imageName: 'your-image-name'
+  dockerRegistry: 'your-docker-registry'
+  dockerRegistryServiceConnection: 'your-docker-registry-service-connection'
+
+stages:
+- stage: Build
+  displayName: Build Stage
+  jobs:
+  - job: Build
+    displayName: Build Job
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '5.x'
+    
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean package'
+        options: '-DskipTests'
+    
+    - task: Docker@2
+      inputs:
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(imageName):$(Build.BuildId)'
+        containerRegistry: $(dockerRegistryServiceConnection)
+    
+    - task: Docker@2
+      inputs:
+        command: 'push'
+        tags: '$(imageName):$(Build.BuildId)'
+        containerRegistry: $(dockerRegistryServiceConnection)
+
+- stage: Test
+  displayName: Test Stage
+  dependsOn: Build
+  jobs:
+  - job: Test
+    displayName: Test Job
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        echo Running unit tests...
+        # Insert your test commands here
+      displayName: Run Tests
+
+- stage: Deploy
+  displayName: Deploy Stage
+  dependsOn: Test
+  jobs:
+  - job: DeployToAzure
+    displayName: Deploy to Azure
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: 'bash'
+        scriptPath: 'deploy.sh'
+        arguments: '--image $(dockerRegistry)/$(imageName):$(Build.BuildId)'
+
+  - job: DeployToKubernetes
+    displayName: Deploy to Kubernetes
+    dependsOn: DeployToAzure
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: HelmInstaller@1
+      inputs:
+        helmVersionToInstall: '3.x'
+    
+    - task: HelmDeploy@0
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: 'your-kubernetes-service-connection'
+        command: 'upgrade'
+        chartType: 'FilePath'
+        chartPath: 'charts/your-chart'
+        releaseName: 'your-release-name'
+        namespace: 'default'
+        overrideValues: 'image.tag=$(Build.BuildId)'
+
+- stage: Cleanup
+  displayName: Cleanup Stage
+  dependsOn: Deploy
+  jobs:
+  - job: CleanUp
+    displayName: Clean Up Job
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        echo Cleaning up resources...
+        # Insert your cleanup commands here
+      displayName: Clean Up
