@@ -1,0 +1,75 @@
+Let's break down how the YAML file works with the environment variable and how it interacts with the deploy.sh script:
+
+1. Defining Parameters and Variables in the YAML:
+yaml
+Copy code
+variables:
+  environment: ${{ parameters.env }}
+variables: This section defines the variables that will be used throughout the pipeline.
+environment: ${{ parameters.env }}: The environment variable is assigned the value of parameters.env. The parameters.env is the value of the parameter that you define under parameters.
+
+2. Defining the Parameter:
+yaml
+Copy code
+parameters:
+- name: env
+  displayName: Environment
+  type: string
+  default: 'dev'
+  values:
+  - dev
+  - test
+  - uat
+  - prod
+
+parameters: This section defines parameters that users can select when they trigger the pipeline.
+name: env: The name of the parameter is env.
+displayName: Environment: This is the display name that will be shown to users in the UI.
+type: string: The parameter is of type string.
+default: 'dev': The default value for this parameter is 'dev'.
+values:: This defines the list of acceptable values for the parameter, which include dev, test, uat, and prod.
+
+3. How This Works Together:
+Parameter Usage: When the pipeline is triggered, users can choose which environment they want to deploy to (dev, test, uat, or prod). If no value is selected, the pipeline defaults to 'dev'.
+
+Variable Assignment: The selected environment value is then assigned to the environment variable in the variables section using ${{ parameters.env }}.
+
+4. Passing the Environment Variable to the Script:
+yaml
+Copy code
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    scriptType: 'bash'
+    scriptPath: 'scripts/deploy.sh'
+    arguments: '$(environment)'
+
+arguments: '$(environment)': This line passes the value of the environment variable (which is set to the selected environment) to the deploy.sh script.
+
+5. Inside the deploy.sh Script:
+In the deploy.sh script, you can capture the passed environment argument like this:
+
+bash
+Copy code
+#!/bin/bash
+
+ENVIRONMENT=$1  # Capture the first argument passed to the script
+echo "Deploying to environment: $ENVIRONMENT"
+
+# Example of using the environment variable
+if [ "$ENVIRONMENT" == "dev" ]; then
+  echo "Deploying to development environment..."
+  # Add deployment logic here
+elif [ "$ENVIRONMENT" == "prod" ]; then
+  echo "Deploying to production environment..."
+  # Add deployment logic here
+fi
+
+$1: This is the first argument passed to the script, which corresponds to the environment variable from the pipeline.
+Deployment Logic: The script can now use the value of ENVIRONMENT to determine what environment-specific logic to run.
+Summary:
+Parameters: Allow you to define a set of environments (dev, test, uat, prod) that can be selected when triggering the pipeline.
+Variables: The selected parameter value is assigned to a variable environment.
+Script Execution: This variable is passed to the deploy.sh script as an argument, allowing the script to handle the deployment logic based on the environment.
+This setup ensures that your deployment pipeline is flexible, allowing easy selection and handling of different environments in a consistent manner.
