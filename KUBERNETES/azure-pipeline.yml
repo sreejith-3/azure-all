@@ -1,0 +1,89 @@
+trigger:
+  branches:
+    include:
+      - main  # Branch that triggers the pipeline
+
+pool:
+  vmImage: 'ubuntu-latest'  # Use the latest Ubuntu VM image
+
+variables:
+  azureSubscription: '$(azureSubscription)'  # Azure service connection
+  kubernetesCluster: '$(kubernetesCluster)'  # Kubernetes cluster name
+  helmChartPath: './charts/app'  # Path to Helm chart
+  releaseName: 'my-release'  # Helm release name
+  rollbackRevision: 1  # Revision to rollback to if needed
+
+parameters:
+  - name: environment
+    type: string
+    default: 'all'  # Default to 'all' to deploy to all environments
+    values:
+      - dev
+      - test
+      - uat
+      - prod
+      - all
+
+stages:
+  - stage: Deploy
+    displayName: Deploy to Environments
+    jobs:
+      - job: DeployToEnvironments
+        steps:
+          - ${{ if eq(parameters.environment, 'dev') }}:
+            - task: UseHelm@1
+              inputs:
+                command: 'upgrade'
+                arguments: '--install $(releaseName) $(helmChartPath) --values $(helmChartPath)/values-dev.yaml --namespace dev'
+
+          - ${{ if eq(parameters.environment, 'test') }}:
+            - task: UseHelm@1
+              inputs:
+                command: 'upgrade'
+                arguments: '--install $(releaseName) $(helmChartPath) --values $(helmChartPath)/values-test.yaml --namespace test'
+
+          - ${{ if eq(parameters.environment, 'uat') }}:
+            - task: UseHelm@1
+              inputs:
+                command: 'upgrade'
+                arguments: '--install $(releaseName) $(helmChartPath) --values $(helmChartPath)/values-uat.yaml --namespace uat'
+
+          - ${{ if eq(parameters.environment, 'prod') }}:
+            - task: UseHelm@1
+              inputs:
+                command: 'upgrade'
+                arguments: '--install $(releaseName) $(helmChartPath) --values $(helmChartPath)/values-prod.yaml --namespace prod'
+
+          - ${{ if eq(parameters.environment, 'all') }}:
+            - task: UseHelm@1
+              inputs:
+                command: 'upgrade'
+                arguments: '--install $(releaseName) $(helmChartPath) --values $(helmChartPath)/values-dev.yaml --namespace dev'
+
+            - task: UseHelm@1
+              inputs:
+                command: 'upgrade'
+                arguments: '--install $(releaseName) $(helmChartPath) --values $(helmChartPath)/values-test.yaml --namespace test'
+
+            - task: UseHelm@1
+              inputs:
+                command: 'upgrade'
+                arguments: '--install $(releaseName) $(helmChartPath) --values $(helmChartPath)/values-uat.yaml --namespace uat'
+
+            - task: UseHelm@1
+              inputs:
+                command: 'upgrade'
+                arguments: '--install $(releaseName) $(helmChartPath) --values $(helmChartPath)/values-prod.yaml --namespace prod'
+
+  - stage: Rollback
+    dependsOn: Deploy
+    condition: failed('Deploy')
+    jobs:
+      - job: RollbackDeployment
+        steps:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptPath: 'rollback.sh'
+              arguments: '--revision $(rollbackRevision)'

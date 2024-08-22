@@ -1,0 +1,123 @@
+ kubernetes-repo/
+
+├── charts/
+
+│   ├── mongodb/
+
+│   │   ├── Chart.yaml
+
+│   │   ├── values.yaml
+
+│   │   ├── values-dev.yaml
+
+│   │   ├── values-test.yaml
+
+│   │   ├── values-uat.yaml
+
+│   │   ├── values-prod.yaml
+
+│   │   └── templates/
+
+│   │       ├── deployment.yaml
+
+│   │       ├── service.yaml
+
+│   │       ├── ingress.yaml
+
+│   │       └── configmap.yaml
+
+│   ├── logstash/
+
+│   │   ├── Chart.yaml
+
+│   │   ├── values.yaml
+
+│   │   ├── values-dev.yaml
+
+│   │   ├── values-test.yaml
+
+│   │   ├── values-uat.yaml
+
+│   │   ├── values-prod.yaml
+
+│   │   └── templates/
+
+│   │       ├── deployment.yaml
+
+│   │       ├── service.yaml
+
+│   │       ├── configmap.yaml
+
+│   │       └── secret.yaml
+
+│   ├── app/
+
+│   │   ├── Chart.yaml
+
+│   │   ├── values.yaml
+
+│   │   ├── values-dev.yaml
+
+│   │   ├── values-test.yaml
+
+│   │   ├── values-uat.yaml
+
+│   │   ├── values-prod.yaml
+
+│   │   └── templates/
+
+│   │       ├── deployment.yaml
+
+│   │       ├── service.yaml
+
+│   │       ├── ingress.yaml
+
+│   │       ├── configmap.yaml
+
+│   │       └── secret.yaml
+
+├── manifests/
+
+│   ├── dev/
+
+│   │   ├── mongodb-deployment.yaml
+
+│   │   ├── logstash-deployment.yaml
+
+│   │   └── app-deployment.yaml
+
+│   ├── test/
+
+│   │   ├── mongodb-deployment.yaml
+
+│   │   ├── logstash-deployment.yaml
+
+│   │   └── app-deployment.yaml
+
+│   ├── uat/
+
+│   │   ├── mongodb-deployment.yaml
+
+│   │   ├── logstash-deployment.yaml
+
+│   │   └── app-deployment.yaml
+
+│   └── prod/
+
+│       ├── mongodb-deployment.yaml
+
+│       ├── logstash-deployment.yaml
+
+│       └── app-deployment.yaml
+
+├── scripts/
+
+│   ├── deploy.sh
+
+│   ├── update.sh
+
+│   └── rollback.sh
+
+├── README.md
+
+└── .gitignore
