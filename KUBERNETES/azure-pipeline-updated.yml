@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+      - main  # The branch that triggers the pipeline
+
+parameters:
+- name: env
+  displayName: Environment
+  type: string
+  default: 'dev'
+  values:
+  - dev
+  - test
+  - uat
+  - prod
+
+variables:
+  environment: ${{ parameters.env }}
+
+pool:
+  vmImage: 'ubuntu-latest'  # Using the latest Ubuntu VM image
+
+steps:
+- task: Checkout@1
+  displayName: 'Checkout the repository'
+  inputs:
+    clean: true
+
+- task: Maven@4
+  displayName: 'Build the application'
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: 'default'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+    goals: 'clean install'
+
+- task: HelmInstaller@0
+  displayName: 'Install Helm'
+  inputs:
+    helmVersion: 'latest'
+
+- task: AzureCLI@2
+  displayName: 'Deploy to Kubernetes'
+  inputs:
+    azureSubscription: '$(azureSubscription)'  # Use the Azure service connection name
+    scriptType: 'bash'
+    scriptPath: 'scripts/deploy.sh'  # Path to your deploy.sh script
+    arguments: '$(environment)'  # Pass the environment variable to the script
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish build artifacts'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    artifact: 'drop'
