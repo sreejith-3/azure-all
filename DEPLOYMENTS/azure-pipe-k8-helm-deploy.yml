@@ -1,0 +1,62 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # Define common variables for Helm and Kubernetes
+  helmChartPath: 'path/to/your/chart'
+  helmReleaseName: 'your-release-name'
+  kubernetesCluster: 'your-aks-cluster'
+  azureSubscription: 'your-azure-subscription'
+  resourceGroup: 'your-resource-group'
+
+parameters:
+  - name: environment
+    displayName: 'Environment'
+    type: string
+    default: 'dev'
+    values:
+      - dev
+      - uat
+      - prod
+
+stages:
+- stage: Deploy
+  displayName: 'Deploy Helm Chart'
+  jobs:
+  - job: Deploy
+    displayName: 'Deploy Helm Chart to Kubernetes'
+    steps:
+    - task: UseAzureCLI@2
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: 'bash'
+        scriptPath: 'deploy.sh'
+        arguments: '--environment $(environment)'
+
+    - task: HelmInstaller@1
+      inputs:
+        helmVersionToInstall: '3.x'
+    
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: 'bash'
+        scriptPath: 'deploy.sh'
+        arguments: '--environment $(environment)'
+
+    - task: HelmDeploy@0
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscription: $(azureSubscription)
+        azureResourceGroup: $(resourceGroup)
+        kubernetesCluster: $(kubernetesCluster)
+        command: 'upgrade'
+        chartType: 'FilePath'
+        chartPath: $(helmChartPath)
+        releaseName: $(helmReleaseName)
+        namespace: $(environment) # Use the environment parameter as the namespace
+        overrideValues: |
+          environment=$(environment)
