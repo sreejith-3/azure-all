@@ -1,0 +1,31 @@
+trigger:
+  branches:
+    include:
+      - main  # Trigger the pipeline on changes to the 'main' branch
+
+pool:
+  vmImage: 'ubuntu-latest'  # Use the latest Ubuntu VM image for the build
+
+variables:
+  azureSubscription: 'your-azure-subscription'  # Azure service connection name
+  azureRegistry: 'your-acr-name.azurecr.io'    # ACR login server
+  imageName: 'your-image-name'  # Name of the Docker image
+  dockerfilePath: 'Dockerfile'  # Path to the Dockerfile
+
+steps:
+- task: Docker@2
+  inputs:
+    command: 'buildAndPush'
+    repository: '$(azureRegistry)/$(imageName)'  # Repository name including the ACR login server
+    dockerfile: '$(dockerfilePath)'  # Path to the Dockerfile
+    containerRegistry: '$(azureSubscription)'  # Azure service connection name
+    tags: |
+      latest
+      $(Build.BuildId)  # Tag with the build ID
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: '$(azureSubscription)'  # Azure service connection name
+    scriptType: 'bash'
+    scriptPath: 'deploy.sh'  # Path to a deployment script if needed (optional)
+    arguments: '--image $(azureRegistry)/$(imageName):latest'
