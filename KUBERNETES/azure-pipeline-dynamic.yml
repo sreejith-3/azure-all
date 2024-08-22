@@ -1,0 +1,16 @@
+variables:
+  environment: ${{ parameters.env }}
+
+parameters:
+- name: env
+  displayName: Environment
+  type: string
+  default: 'dev'
+  values:
+  - dev
+  - test
+  - uat
+  - prod
+
+
+

@@ -1,29 +1,30 @@
 #!/bin/bash
 
-# Exit on error
-set -e
+# Parameters
+ENVIRONMENT=$1  # This will automatically receive the value from the pipeline
 
-# Variables
-HELM_RELEASE_NAME="my-release"
-HELM_CHART_DIR="./charts/app"  # Path to the Helm chart directory
-KUBE_CONTEXT="your-kube-context"  # Your Kubernetes context
-ENVIRONMENT="${1:-dev}"  # Default to 'dev' if no argument is provided
+# Other variables
+CHART_NAME="your-chart-name"
+NAMESPACE="your-namespace"
+RELEASE_NAME="your-release-name"
 VALUES_FILE="values-$ENVIRONMENT.yaml"
 
-# Check if environment argument is provided
-if [ -z "$1" ]; then
-  echo "Usage: $0 <environment>"
+# Check if the environment is provided
+if [ -z "$ENVIRONMENT" ]; then
+  echo "Error: No environment specified."
   exit 1
 fi
 
-echo "Deploying to environment: $ENVIRONMENT"
+# Deploy the Helm chart to the specified environment
+echo "Deploying $CHART_NAME to $ENVIRONMENT environment..."
 
-# Set Kubernetes context
-kubectl config use-context $KUBE_CONTEXT
+helm upgrade --install $RELEASE_NAME ./$CHART_NAME \
+  --namespace $NAMESPACE \
+  -f $VALUES_FILE
 
-# Deploy Helm chart
-helm upgrade --install $HELM_RELEASE_NAME $HELM_CHART_DIR \
-  --values "$HELM_CHART_DIR/values.yaml" \
-  --values "$HELM_CHART_DIR/$VALUES_FILE"
-
-echo "Deployment completed for environment: $ENVIRONMENT"
+if [ $? -ne 0 ]; then
+  echo "Deployment to $ENVIRONMENT failed!"
+  exit 1
+else
+  echo "Deployment to $ENVIRONMENT succeeded!"
+fi
